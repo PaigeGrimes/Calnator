@@ -41,6 +41,15 @@ def hide_entire_sidebar():
         unsafe_allow_html=True,
     )
 
+def hide_menu():
+    # Hide default multipage navigation
+    hidemenu = """
+        <style>
+            [data-testid="stSidebarNav"] { display: none; }
+        </style>
+    """
+    st.markdown(hidemenu, unsafe_allow_html=True)
+
 ###############################################################################
 # 3. Login screen
 ###############################################################################
@@ -67,6 +76,7 @@ def login_screen():
 def main():
     # Hide Streamlit's default menus on every load
     hide_default_streamlit_ui()
+    hide_menu()
 
     # Initialize session state
     if "logged_in" not in st.session_state:
