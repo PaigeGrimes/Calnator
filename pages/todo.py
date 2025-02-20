@@ -1,18 +1,11 @@
 import streamlit as st
-import streamlit_app as saap
+import streamlit_app as sapp
 
-# Hide default multipage navigation
-hide_menu = """
-    <style>
-        [data-testid="stSidebarNav"] { display: none; }
-    </style>
-"""
-st.markdown(hide_menu, unsafe_allow_html=True)
+st.set_page_config(page_title="Calendarnator9001")
+sapp.hide_menu()
+sapp.sidebar()
 
-
-st.title("To-Do List")
-saap.sidebar()
-import streamlit as st
+st.subheader("To-Do List")
 
 # Initialize tasks in session state
 if "tasks" not in st.session_state:
