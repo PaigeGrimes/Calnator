@@ -33,11 +33,26 @@ def add_event(title, date_start, date_end):
 def show_events():
     # Connect to SQLite database
     conn = sqlite3.connect("Calendar.db")
-    # Create a dataframe of calendar events
-    df = pd.read_sql_query("SELECT * FROM events", conn)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT,
+                    datetime_start TEXT,
+                    datetime_end TEXT
+                )
+            """)
+        conn.commit()
+        # Create a dataframe of calendar events
+        df = pd.read_sql_query("SELECT * FROM events", conn)
+        return df
+    except sqlite3.IntegrityError:
+        print("No events available")
+
     conn.close()
     # Return the dataframe
-    return df
+    return
 
 
 #####################################################################
@@ -67,9 +82,17 @@ def add_todo(task):
 def remove_task(task):
     conn = sqlite3.connect("Calendar.db")
     cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM todo WHERE (title) = (?)", task)
-    conn.commit()
+    try:
+        cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS todo (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        title TEXT
+                    )
+                """)
+        cursor.execute("DELETE FROM todo WHERE (title) = (?)", task)
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print()
     st.success(f"Event '{task}' removed!")
 
     # Close the connection
