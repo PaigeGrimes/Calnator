@@ -1,16 +1,16 @@
 from datetime import datetime
 import streamlit as st
 from streamlit_calendar import calendar
-import streamlit_app as sapp
 import modify_db as db
+from pages import home_page as home
 
 #####################################################################
 #       Initialize the sidebar and header for the page              #
 #####################################################################
 st.set_page_config(page_title="Calendarnator9001")
-sapp.hide_menu()
-sapp.sidebar()
-st.title(f"{sapp.name}'s Calendar")
+home.hide_menu()
+home.sidebar()
+st.title(f"John's Calendar")    # TODO: Change to users name
 
 # Get the calendar events
 calendar_events = db.show_events()
@@ -66,3 +66,4 @@ state = calendar(
     """,
     key=mode,
 )
+

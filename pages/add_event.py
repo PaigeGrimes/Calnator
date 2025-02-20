@@ -1,11 +1,11 @@
 import streamlit as st
 import modify_db as db
 from datetime import datetime
-import streamlit_app as sapp
+from pages import home_page as home
 
 st.set_page_config(page_title="Calendarnator9001")
-sapp.hide_menu()
-sapp.sidebar()
+home.hide_menu()
+home.sidebar()
 st.subheader("Add Important Events and Assignments")
 tab1, tab2 = st.tabs(["Add To Calendar", "Add Assignments"])
 with tab1:
@@ -33,5 +33,4 @@ with tab2:
     if st.button("Add Assignment"):
         # TODO: Add logic for adding assignment to db
         pass
-
 

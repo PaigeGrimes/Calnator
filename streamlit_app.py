@@ -1,5 +1,5 @@
 import streamlit as st
-from pages.home_page import home_page 
+from pages import home_page as h
 
 ###############################################################################
 # 1. Credentials (hard-coded for demo)
@@ -41,14 +41,6 @@ def hide_entire_sidebar():
         unsafe_allow_html=True,
     )
 
-def hide_menu():
-    # Hide default multipage navigation
-    hidemenu = """
-        <style>
-            [data-testid="stSidebarNav"] { display: none; }
-        </style>
-    """
-    st.markdown(hidemenu, unsafe_allow_html=True)
 
 ###############################################################################
 # 3. Login screen
@@ -74,9 +66,9 @@ def login_screen():
 # 4. Main flow
 ###############################################################################
 def main():
+    st.set_page_config(page_title="Calendarnator9001")
     # Hide Streamlit's default menus on every load
     hide_default_streamlit_ui()
-    hide_menu()
 
     # Initialize session state
     if "logged_in" not in st.session_state:
@@ -89,7 +81,7 @@ def main():
         st.stop()  # Ensure we don't display the home page code below
 
     # If the user *is* logged in, load the home page from home_page.py
-    home_page()
+    h.home_page()
 
 
 ###############################################################################
