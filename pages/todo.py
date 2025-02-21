@@ -4,8 +4,8 @@ from pages import home_page as home
 st.set_page_config(page_title="Calendarnator9001")
 home.hide_menu()
 home.sidebar()
+col1, col2 = st.columns(2)
 
-st.subheader("To-Do List")
 
 # Initialize tasks in session state
 if "tasks" not in st.session_state:
@@ -14,7 +14,8 @@ if "tasks" not in st.session_state:
 if "completed_tasks" not in st.session_state:
     st.session_state.completed_tasks = {}
 
-with st.popover("Add task"):
+with col2:
+    st.subheader("Add New Task")
     todo = st.text_input("What do you need to do? :)")
     if st.button("Add Task"):
         if todo in st.session_state.tasks:
@@ -37,7 +38,8 @@ def remove_completed_tasks():
 
 
 # Display tasks with checkboxes
-with st.container():
+with col1:
+    st.subheader("To-Do List")
     for task in st.session_state.tasks:
         st.session_state.completed_tasks[task] = st.checkbox(
             task, key=task, value=st.session_state.completed_tasks.get(task, False)
