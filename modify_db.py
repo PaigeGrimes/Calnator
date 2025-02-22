@@ -186,8 +186,7 @@ def add_todo(task):
             )
         """)
     conn.commit()
-    cursor.execute("INSERT INTO todo (title) VALUES (?)",
-                   (task))
+    cursor.execute("INSERT INTO todo (title) VALUES (?)", (task,))
     conn.commit()
     st.success(f"Event '{task}' added!")
 
@@ -205,11 +204,23 @@ def remove_task(task):
                         title TEXT
                     )
                 """)
-        cursor.execute("DELETE FROM todo WHERE (title) = (?)", task)
+        cursor.execute("DELETE FROM todo WHERE title = ?", (task,))
         conn.commit()
     except sqlite3.IntegrityError:
         print()
-    st.success(f"Event '{task}' removed!")
+
 
     # Close the connection
     conn.close()
+
+def get_todos():
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT title FROM todo")
+        tasks = cursor.fetchall()  # tasks is a list of tuples
+    except sqlite3.Error as e:
+        print(e)
+    conn.close()
+    # Return a list of task titles
+    return [task[0] for task in tasks]
