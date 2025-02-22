@@ -75,7 +75,7 @@ def show_events():
     return
 
 
-def remove_event(title):
+def remove_event(title, date, time):
     conn = sqlite3.connect("Calendar.db")
     cursor = conn.cursor()
     try:
@@ -88,8 +88,13 @@ def remove_event(title):
                             datetime_end TEXT
                         )
                     """)
-
-        cursor.execute("DELETE FROM events WHERE title = (?) ", (title))
+        if title and date and time:
+            cursor.execute("DELETE FROM events WHERE title = ? AND date = ? AND datetime_start = ?",
+                           (title, date, time))
+        elif title and date:
+            cursor.execute("DELETE FROM events WHERE title = ? AND date = ?",
+                           (title, date))
+            st.success(f'{title} removed')
         conn.commit()
         st.success(f"The following event has been removed: '{title}' ")
     except sqlite3.IntegrityError:
@@ -217,6 +222,12 @@ def get_todos():
     conn = sqlite3.connect("Calendar.db")
     cursor = conn.cursor()
     try:
+        cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS todo (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        title TEXT
+                    )
+                """)
         cursor.execute("SELECT title FROM todo")
         tasks = cursor.fetchall()  # tasks is a list of tuples
     except sqlite3.Error as e:

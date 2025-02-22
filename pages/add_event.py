@@ -18,6 +18,16 @@ def convert_to_24hr_format(t_str, period):
     return t  # Return as is if already in 24-hour format
 
 
+def update_titles():
+    st.session_state.selected_title = None
+    st.session_state.selected_time = None  # Reset time selection when date changes
+
+
+# Callback function to reset time when title changes
+def update_times():
+    st.session_state.selected_time = None
+
+
 #####################################################################
 #       Initialize the sidebar and header for the page              #
 #####################################################################
@@ -25,7 +35,6 @@ st.set_page_config(page_title="Calendarnator9001")
 home.hide_menu()
 home.sidebar()
 st.subheader("Add Important Events and Assignments")
-
 
 addCal, removeCal, addHw = st.tabs(["Add To Calendar", "Remove Calendar Event", "Add Assignments"])
 #####################################################################
@@ -93,19 +102,44 @@ with addCal:
 with removeCal:
     # Get the contents of the database
     events = db.show_events()
-
     # Create a set of event dates so that they are unique and add them to a drop-down menu
     event_dates = set(events['date'].to_list())
-    date_options = st.selectbox("Select a date", options=event_dates)
-    if date_options:
+    # Initialize session state for dropdown selections
+    if "selected_date" not in st.session_state:
+        st.session_state.selected_date = None
+    if "selected_title" not in st.session_state:
+        st.session_state.selected_title = None
+    if "selected_time" not in st.session_state:
+        st.session_state.selected_time = None
+    st.session_state.selected_date = st.selectbox("Select a date", options=event_dates, key="date_select",
+                                                  on_change=update_titles)
+
+    if st.session_state.selected_date:
         # If they have selected a date, display those values in the drop-down of event titles.
-        event_titles = events.loc[events['date'] == date_options, 'title'].to_list()
-        title_options = st.selectbox("Available assignments", options=event_titles)
+        event_titles = events.loc[events['date'] == st.session_state.selected_date, 'title'].unique().tolist()
+        st.session_state.selected_title = st.selectbox("Available assignments", options=event_titles,
+                                                       key="title_select", on_change=update_times)
+        if st.session_state.selected_title:
+            event_times = events.loc[(events["date"] ==
+                                      st.session_state.selected_date) &
+                                     (events["title"] ==
+                                      st.session_state.selected_title), "datetime_start"].to_list()
+            print(len(event_times))
+            if len(event_times) > 1:
+                st.session_state.selected_time = st.selectbox("Choose a corresponding time", options=event_times,
+                                                              key="time_select")
 
     if st.button("Remove Event"):
         # If the event exists, remove it.
-        if event_dates and event_titles:
-            db.remove_event(title_options)
+        if st.session_state.selected_date and st.session_state.selected_title:
+            print("button pressed and session state passed")
+            db.remove_event(
+                st.session_state.selected_title,
+                st.session_state.selected_date,
+                st.session_state.selected_time
+            )
+
+            st.rerun()
 
 #####################################################################
 # tab addHw: Add an assignment to the assignments database that
