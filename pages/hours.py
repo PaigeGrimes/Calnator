@@ -6,7 +6,7 @@ home.hide_menu()
 home.sidebar()
 
 st.title("Hours of Operation")
-
+st.markdown("[Campus Map](#campus-map)")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -65,3 +65,6 @@ with col2:
         st.subheader("CWC", help="Career Engagement and Opportunity")
         st.write('__Monday – Friday Hours__')
         st.write('* 8:00am- 5:00pm')
+
+st.header("Campus Map")
+st.image("img/campusMap.jpg")
