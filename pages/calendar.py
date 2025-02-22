@@ -5,17 +5,18 @@ import modify_db as db
 from pages import home_page as home
 
 #####################################################################
-#       Initialize the sidebar and header for the page              #
+#       Initialize the sidebar and header for the page
 #####################################################################
 st.set_page_config(page_title="Calendarnator9001")
 home.hide_menu()
 home.sidebar()
 st.title(f"John's Calendar")    # TODO: Change to users name
 
-# Get the calendar events
-calendar_events = db.show_events()
 # Define the calendar mode that is to be used. Can be a list if different options are needed.
 mode = "daygrid"
+
+# Get the calendar events
+calendar_events = db.show_events()
 
 # Create a list of events
 events = [

@@ -4,9 +4,9 @@ import pandas as pd
 
 
 #####################################################################
-#       Methods to add and retrieve calendar events                 #
+#       Methods to add, retrieve, and remove calendar events
 #####################################################################
-def add_event(title, date_start, date_end):
+def add_event(title, date, date_start, date_end):
     # Connect to SQLite database (creates file if not exists)
     conn = sqlite3.connect("Calendar.db")
     cursor = conn.cursor()
@@ -16,18 +16,37 @@ def add_event(title, date_start, date_end):
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
+            date TEXT,
             datetime_start TEXT,
             datetime_end TEXT
         )
     """)
     conn.commit()
-    cursor.execute("INSERT INTO events (title, datetime_start, datetime_end) VALUES (?, ?, ?)",
-                   (title, date_start, date_end))
+    cursor.execute("INSERT INTO events (title, date, datetime_start, datetime_end) VALUES (?, ?, ?, ?)",
+                   (title, date, date_start, date_end))
     conn.commit()
     st.success(f"Event '{title}' added!")
 
     # Close the connection
     conn.close()
+
+
+def check_time_exists(date_start, date_end):
+    try:
+        conn = sqlite3.connect("Calendar.db")
+        cursor = conn.cursor()
+
+        cursor.execute(f"SELECT COUNT(*) FROM events WHERE datetime_start = ? or datetime_end = ?",
+                       (date_start, date_end))
+        result = cursor.fetchone()[0]
+        conn.close()
+        if result > 0:
+            return True
+        else:
+            return False
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
 
 
 def show_events():
@@ -39,6 +58,7 @@ def show_events():
                 CREATE TABLE IF NOT EXISTS events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT,
+                    date TEXT,
                     datetime_start TEXT,
                     datetime_end TEXT
                 )
@@ -53,6 +73,102 @@ def show_events():
     conn.close()
     # Return the dataframe
     return
+
+
+def remove_event(title):
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS events (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            title TEXT,
+                            date TEXT,
+                            datetime_start TEXT,
+                            datetime_end TEXT
+                        )
+                    """)
+
+        cursor.execute("DELETE FROM events WHERE title = (?) ", (title))
+        conn.commit()
+        st.success(f"The following event has been removed: '{title}' ")
+    except sqlite3.IntegrityError:
+        print("That assignment does not exist.")
+
+    # Close the connection
+    conn.close()
+
+
+#####################################################################
+#       Methods to add and remove homework assignments due          #
+#####################################################################
+def add_hw(title, due_date):
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS assignments (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        title TEXT UNIQUE,
+                        date_due TEXT
+                    )
+                """)
+        conn.commit()
+        cursor.execute("INSERT INTO assignments (title, date_due) VALUES (?, ?)",
+                       (title, due_date))
+        conn.commit()
+        st.success("Your assignment due date has been scheduled.")
+    except sqlite3.IntegrityError:
+        st.code("Could not add the assignment. That assignment may already exist.")
+
+    conn.close()
+
+
+def get_hw():
+    # Connect to SQLite database
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    # conn.execute("DROP TABLE assignments")
+    try:
+        cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS assignments (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        title TEXT UNIQUE,
+                        date_due TEXT
+                    )
+                """)
+        conn.commit()
+        # Create a dataframe of calendar events
+        df = pd.read_sql_query("SELECT * FROM assignments", conn)
+        return df
+    except sqlite3.IntegrityError:
+        print("No assignment are currently due.")
+
+    conn.close()
+    # Return the dataframe
+    return
+
+
+def remove_hw(title):
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS assignments (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            title TEXT UNIQUE,
+                            date_due TEXT
+                        )
+                    """)
+        for hw in title:
+            print(hw)
+            cursor.execute("DELETE FROM assignments WHERE title = (?) ", (hw,))
+            conn.commit()
+    except sqlite3.IntegrityError:
+        print("That assignment does not exist.")
+
+    # Close the connection
+    conn.close()
 
 
 #####################################################################
