@@ -72,6 +72,12 @@ def login_screen():
     """
     background_img("https://i.imgur.com/t0xhkpS.png")
     # Use Streamlit container to display login form
+    if st.button("Secret Button"):
+        # Set a custom session state var to indicate which page to load
+        st.session_state.active_page = "secret_page"
+        # Force the app to refresh so it goes directly to that page
+        st.stop()
+    
     with st.form(key="login_form", border=False):
         st.title("Please log in to continue")
 
@@ -96,21 +102,35 @@ def login_screen():
 ###############################################################################
 def main():
     st.set_page_config(page_title="Calendarnator9001")
-    # Hide Streamlit's default menus on every load
     hide_default_streamlit_ui()
 
     # Initialize session state
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
 
-    # If the user is NOT logged in, hide sidebar & show login form
-    if not st.session_state.logged_in:
+    if "active_page" not in st.session_state:
+        st.session_state.active_page = "home"  # default
+
+    # -------------------------------------------------------
+    # Only force the login screen if user isn't logged in
+    # AND they are trying to access something other than the secret page
+    # -------------------------------------------------------
+    if not st.session_state.logged_in and st.session_state.active_page != "secret_page":
         hide_entire_sidebar()
         login_screen()
-        st.stop()  # Ensure we don't display the home page code below
+        st.stop()
 
-    # If the user *is* logged in, load the home page from home_page.py
-    h.home_page()
+    # -------------------------------------------------------
+    # If they want the secret page:
+    #   - They can see it whether or not they are logged in
+    #   - Otherwise, load the normal home page
+    # -------------------------------------------------------
+    if st.session_state.active_page == "secret_page":
+        from pages import secret_page as s
+        s.secret_page()
+    else:
+        from pages import home_page as h
+        h.home_page()
 
 
 ###############################################################################
