@@ -3,6 +3,7 @@ import streamlit as st
 import modify_db as db
 import numpy as np
 import pandas as pd
+import streamlit_app
 
 
 ###############################################################################
@@ -23,25 +24,38 @@ def hide_menu():
 ###############################################################################
 def sidebar():
     with st.sidebar:
-        st.title("Calendarnator9001")
-        st.page_link("streamlit_app.py", label="Home")
-        st.page_link("pages/add_event.py", label="Add/Drop")
-        st.page_link("pages/calendar.py", label="Calendar")
-        st.page_link("pages/todo.py", label="To-Do List")
-        st.page_link("pages/hours.py", label="Hours of Operation")
+        if st.session_state.logged_in:
+            st.title("Calendarnator9001")
+            st.page_link("home_page.py", label="Home")
+            st.page_link("pages/add_event.py", label="Add/Drop")
+            st.page_link("pages/calendar.py", label="Calendar")
+            st.page_link("pages/todo.py", label="To-Do List")
+            st.page_link("pages/hours.py", label="Hours of Operation")
+            if st.button("Log out"):
+                st.session_state.logged_in = False
+                st.rerun()
 
 
+# Initialize session state
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    streamlit_app.main()
 # TODO: Why does the df not update when an assignment is added??????????
-def home_page():
-    """
-    This function displays the home page content.
-    Including the sidebar and main body content.
-    """
+elif st.session_state.logged_in:
+    # """
+    # This function displays the home page content.
+    # Including the sidebar and main body content.
+    # """
     hide_menu()
     sidebar()
+    db.create_event_db()
+    db.create_assignment_db()
+    db.create_todo_db()
 
     # MAIN CONTENT # TODO: Have it load the users name
-    st.subheader(f"Hello :grey[John]!", divider="grey")
+    st.subheader(f"Hello :grey[{st.session_state.user_name}]!", divider="grey")
 
     with st.container():
         col1, col2 = st.columns(2)
@@ -52,7 +66,7 @@ def home_page():
         # Col2 displays the assignments that the user has not yet completed.
         with col2:
             st.subheader("Current Assignments")
-            df = db.get_hw()
+            df = db.get_hw(st.session_state.user_id)
 
             df['date_due'] = pd.to_datetime(df['date_due']).dt.date  # Convert String to date
             current_date = datetime.today().date()  # Get today's date
@@ -68,15 +82,15 @@ def home_page():
                 is_complete = np.array(complete).reshape(-1, 1)  # Ensure the list is a column vector
 
                 # Drop the first column before concatenation
-                df_without_first_col = df.iloc[:, 1:].to_numpy()
+                df_without_first_col = df.iloc[:, 2:].to_numpy()
 
                 # Concatenate along columns
                 df_new = np.concatenate((df_without_first_col, is_complete), axis=1)
 
                 # Create a new df
                 df = pd.DataFrame(df_new, columns=list(["Assignment", "Due Date", "Complete"]))
-                df["Complete"] = False      # Ensure all values start as boolean
-                st.session_state.df = df    # Initialize session state
+                df["Complete"] = False  # Ensure all values start as boolean
+                st.session_state.df = df  # Initialize session state
 
                 # Display the users homework
                 edited_df = st.data_editor(st.session_state.df, use_container_width=True, hide_index=True)
@@ -95,13 +109,13 @@ def home_page():
                     # If there exists an assignment that has been completed
                     if completed_titles:
                         # Remove the completed assignments
-                        db.remove_hw(completed_titles)
+                        db.remove_hw(st.session_state.user_id, completed_titles)
 
                         # Refresh the data after deletion
-                        df = db.get_hw()
+                        df = db.get_hw(st.session_state.user_id)
                         df['date_due'] = pd.to_datetime(df['date_due'])  # Convert to datetime format
                         if len(df) > 0:
-                            df_without_first_col = df.iloc[:, 1:].to_numpy()
+                            df_without_first_col = df.iloc[:, 2:].to_numpy()
                             is_complete = np.array([False] * len(df)).reshape(-1, 1)
                             df_new = np.concatenate((df_without_first_col, is_complete), axis=1)
                             df = pd.DataFrame(df_new, columns=["Assignment", "Due Date", "Complete"])
@@ -118,3 +132,5 @@ def home_page():
                 st.markdown('You have *no assignment due* :smile:🎉')
                 st.markdown('''If you have a new assignment, go to the :green[Add/Drop] 
                 tab and add the assignment so you wont forget!''')
+else:
+    streamlit_app.main()
