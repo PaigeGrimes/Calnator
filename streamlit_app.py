@@ -1,12 +1,6 @@
 import streamlit as st
 from pages import home_page as h
-
-###############################################################################
-# 1. Credentials (hard-coded for demo)
-###############################################################################
-VALID_USERNAME = "john"
-VALID_PASSWORD = "secret123"
-
+from modify_db import check_user_credentials
 
 ###############################################################################
 # 2. Streamlit UI tweaks
@@ -44,57 +38,31 @@ def hide_entire_sidebar():
     )
 
 
-def background_img(image_url):
-    st.markdown(
-        f"""
-            <style>
-            .stApp {{
-                background: url("{image_url}") no-repeat center center fixed;
-                background-size: cover;
-                height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }}
-            </style>
-            """,
-        unsafe_allow_html=True
-    )
 
 
 ###############################################################################
 # 3. Login screen
 ###############################################################################
 def login_screen():
-    """
-    Prompts the user for username and password.
-    Sets `logged_in` to True in session_state if credentials match.
-    """
-    background_img("https://i.imgur.com/t0xhkpS.png")
-    # Use Streamlit container to display login form
     if st.button("Secret Button"):
-        # Set a custom session state var to indicate which page to load
         st.session_state.active_page = "secret_page"
-        # Force the app to refresh so it goes directly to that page
-        st.stop()
-    
+        st.st.experimental_rerun()  # or st.experimental_rerun() if you want an immediate page reload
+
     with st.form(key="login_form", border=False):
         st.title("Please log in to continue")
 
-        # Username and Password inputs
         username = st.text_input("Username", key="username_input")
         password = st.text_input("Password", type="password", key="password_input")
-
-        # Submit button for form
         submit_button = st.form_submit_button("Login")
 
-        if submit_button:
-            if username == VALID_USERNAME and password == VALID_PASSWORD:
-                st.session_state.logged_in = True
-                st.success("Login successful!")
-                st.stop()  # Try to instantly refresh
-            else:
-                st.error("Invalid username or password.")
+    if submit_button:
+        # Check the database
+        if check_user_credentials(username, password):
+            st.session_state.logged_in = True
+            st.success("Login successful!")
+            st.experimental_rerun()
+        else:
+            st.error("Invalid username or password.")
 
 
 ###############################################################################

@@ -2,6 +2,50 @@ import sqlite3
 import streamlit as st
 import pandas as pd
 
+#####################################################################
+#                Methods for storing and retrieving user data
+#####################################################################
+
+def create_user_table():
+    """Creates the user table if it does not already exist."""
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def add_user(username, password):
+    """
+    Registers a new user into the database.
+    NOTE: This stores plaintext passwords. For production, store a hashed password.
+    """
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        st.success(f"User '{username}' created successfully!")
+    except sqlite3.IntegrityError:
+        st.error(f"Username '{username}' is already taken. Please choose a different username.")
+    conn.close()
+
+def check_user_credentials(username, password):
+    """
+    Returns True if username+password exist in the database, else False.
+    """
+    conn = sqlite3.connect("Calendar.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
+
 
 #####################################################################
 #       Methods to add, retrieve, and remove calendar events
@@ -36,8 +80,10 @@ def check_time_exists(date_start, date_end):
         conn = sqlite3.connect("Calendar.db")
         cursor = conn.cursor()
 
-        cursor.execute(f"SELECT COUNT(*) FROM events WHERE datetime_start = ? or datetime_end = ?",
-                       (date_start, date_end))
+        cursor.execute(
+            "SELECT COUNT(*) FROM events WHERE datetime_start = ? OR datetime_end = ?",
+            (date_start, date_end)
+        )
         result = cursor.fetchone()[0]
         conn.close()
         if result > 0:
@@ -94,7 +140,7 @@ def remove_event(title, date, time):
         elif title and date:
             cursor.execute("DELETE FROM events WHERE title = ? AND date = ?",
                            (title, date))
-            st.success(f'{title} removed')
+            st.success(f"{title} removed")
         conn.commit()
         st.success(f"The following event has been removed: '{title}' ")
     except sqlite3.IntegrityError:
@@ -193,7 +239,7 @@ def add_todo(task):
     conn.commit()
     cursor.execute("INSERT INTO todo (title) VALUES (?)", (task,))
     conn.commit()
-    st.success(f"Event '{task}' added!")
+    st.success(f"Task '{task}' added!")
 
     # Close the connection
     conn.close()
@@ -213,7 +259,6 @@ def remove_task(task):
         conn.commit()
     except sqlite3.IntegrityError:
         print()
-
 
     # Close the connection
     conn.close()

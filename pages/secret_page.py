@@ -1,19 +1,27 @@
+# pages/secret_page.py
 import streamlit as st
+# Import your DB functions (adjust the import path as needed)
+from modify_db import create_user_table, add_user
 
 def secret_page():
     st.title("This is the Secret Page")
 
-    # A simple form for usernames and passwords
-    with st.form(key="secret_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submit_button = st.form_submit_button("Submit")
+    # 1) Make sure the table exists
+    create_user_table()
 
-    # If user clicks "Submit" inside the form
+    # 2) Use a form for the username & password fields
+    with st.form(key="secret_form"):
+        new_username = st.text_input("Username")
+        new_password = st.text_input("Password", type="password")
+        submit_button = st.form_submit_button("Create User")
+
+    # 3) If they submit, call add_user (which writes to the DB)
     if submit_button:
-        # Do whatever you need here
-        st.write(f"**You entered:**\n- Username: `{username}`\n- Password: `{password}`")
-        
-    # Optional: a separate "Say Hello" button outside the form
+        if new_username and new_password:
+            add_user(new_username, new_password)
+        else:
+            st.error("Please enter both username and password.")
+
+    # Optional: A separate button for some other action
     if st.button("Say Hello"):
         st.write("Hello there, my friend!")
