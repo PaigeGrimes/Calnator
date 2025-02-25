@@ -1,6 +1,6 @@
 import streamlit as st
 from modify_db import check_user_credentials
-import secret_page as secret
+from login import secret_page as secret
 
 
 ###############################################################################
@@ -72,7 +72,7 @@ def login_screen():
 ###############################################################################
 def main():
     # st.set_page_config(page_title="Calendarnator9001")
-    hide_default_streamlit_ui()
+    #hide_default_streamlit_ui()
 
     # Initialize session state
     if "logged_in" not in st.session_state:
@@ -92,7 +92,7 @@ def main():
     # AND they are trying to access something other than the secret page
     # -------------------------------------------------------
     if not st.session_state.logged_in:  # and st.session_state.active_page != "secret_page":
-        hide_entire_sidebar()
+        #hide_entire_sidebar()
         login, new_user = st.tabs(["Login", "Create Account"])
         with login:
             login_screen()

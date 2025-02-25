@@ -2,7 +2,7 @@
 import streamlit as st
 # Import your DB functions (adjust the import path as needed)
 from modify_db import create_user_table, add_user
-import streamlit_app as sapp
+from login import streamlit_app as sapp
 
 
 def secret_page():

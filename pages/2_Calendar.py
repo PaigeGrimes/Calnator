@@ -2,8 +2,7 @@ from datetime import datetime
 import streamlit as st
 from streamlit_calendar import calendar
 import modify_db as db
-from home_page import hide_menu, sidebar
-import streamlit_app
+from login import streamlit_app
 
 #####################################################################
 #       Initialize the sidebar and header for the page
@@ -12,9 +11,10 @@ if not st.session_state.logged_in:
     streamlit_app.main()
 # TODO: Why does the df not update when an assignment is added??????????
 elif st.session_state.logged_in:
-    st.set_page_config(page_title="Calendarnator9001")
-    hide_menu()
-    sidebar()
+    with st.sidebar:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
     st.title(f"{st.session_state.user_name}'s Calendar")    # TODO: Change to users name
 
     # Define the calendar mode that is to be used. Can be a list if different options are needed.

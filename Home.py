@@ -3,7 +3,7 @@ import streamlit as st
 import modify_db as db
 import numpy as np
 import pandas as pd
-import streamlit_app
+from login import streamlit_app
 
 
 ###############################################################################
@@ -22,19 +22,6 @@ def hide_menu():
 ###############################################################################
 # Show each streamlit page on the sidebar
 ###############################################################################
-def sidebar():
-    with st.sidebar:
-        if st.session_state.logged_in:
-            st.title("Calendarnator9001")
-            st.page_link("home_page.py", label="Home")
-            st.page_link("pages/add_event.py", label="Add/Drop")
-            st.page_link("pages/calendar.py", label="Calendar")
-            st.page_link("pages/todo.py", label="To-Do List")
-            st.page_link("pages/hours.py", label="Hours of Operation")
-            if st.button("Log out"):
-                st.session_state.logged_in = False
-                st.rerun()
-
 
 # Initialize session state
 if "logged_in" not in st.session_state:
@@ -42,14 +29,16 @@ if "logged_in" not in st.session_state:
 
 if not st.session_state.logged_in:
     streamlit_app.main()
-# TODO: Why does the df not update when an assignment is added??????????
 elif st.session_state.logged_in:
     # """
     # This function displays the home page content.
     # Including the sidebar and main body content.
     # """
-    hide_menu()
-    sidebar()
+    with st.sidebar:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
+
     db.create_event_db()
     db.create_assignment_db()
     db.create_todo_db()

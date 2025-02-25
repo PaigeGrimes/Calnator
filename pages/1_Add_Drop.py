@@ -3,8 +3,7 @@ import streamlit as st
 import modify_db as db
 from datetime import datetime
 from datetime import time
-from home_page import hide_menu, sidebar
-import streamlit_app
+from login import streamlit_app
 
 
 # Convert the time input from 12-hour to 24-hour format
@@ -28,17 +27,17 @@ def update_titles():
 def update_times():
     st.session_state.selected_time = None
 
-
 #####################################################################
 #       Initialize the sidebar and header for the page              #
 #####################################################################
 if not st.session_state.logged_in:
     streamlit_app.main()
 # TODO: Why does the df not update when an assignment is added??????????
-elif st.session_state.logged_in:
-    st.set_page_config(page_title="Calendarnator9001")
-    hide_menu()
-    sidebar()
+else:
+    with st.sidebar:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
 
     db.create_event_db()
     db.create_assignment_db()

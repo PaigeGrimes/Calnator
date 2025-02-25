@@ -1,14 +1,14 @@
 import streamlit as st
-from home_page import hide_menu, sidebar
-import streamlit_app
+from login import streamlit_app
 
 if not st.session_state.logged_in:
     streamlit_app.main()
 # TODO: Why does the df not update when an assignment is added??????????
 elif st.session_state.logged_in:
-    st.set_page_config(page_title="Calendarnator9001")
-    hide_menu()
-    sidebar()
+    with st.sidebar:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
 
     st.title("Hours of Operation")
     st.markdown("[Campus Map](#campus-map)")
